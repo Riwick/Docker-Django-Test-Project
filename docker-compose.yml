@@ -6,5 +6,20 @@ services:
       - "8000:8000"
     volumes:
       - ./test_project:/test_project
+    environment:
+      - DB_HOST=database
+      - DB_NAME=test
+      - DB_USER=dbuser
+      - DB_PASS=pass
     command:
       sh -c "python manage.py runserver 0.0.0.0:8000"
+
+    depends_on:
+      - database
+
+  database:
+    image: postgres:16.1-alpine
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
