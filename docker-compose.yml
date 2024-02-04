@@ -15,6 +15,7 @@ services:
       sh -c "python manage.py runserver 0.0.0.0:8000"
 
     depends_on:
+      - redis
       - database
 
   database:
@@ -23,3 +24,43 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis:7.2.4-alpine
+    hostname: redis
+
+  worker:
+    build:
+      context: .
+    hostname: worker
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./test_project/:/test_project
+    links:
+      - redis
+    depends_on:
+      - redis
+      - database
+      - project
+    environment:
+      - DB_HOST=database
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASS=postgres
+
+  flower:
+    build:
+      context: .
+    hostname: flower
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - ./test_project:/test_project
+    links:
+      - redis
+    depends_on:
+      - redis
+      - worker
+    ports:
+      - "5555:5555"

@@ -6,11 +6,8 @@ from products.models import Product
 
 class ProductSerializer(ModelSerializer):
     company = serializers.CharField(source='author.company_name')
-    price = serializers.SerializerMethodField()
-
-    def get_price(self, instance):
-        return instance.price
+    category_name = serializers.CharField(source='category.name', read_only=True)
 
     class Meta:
         model = Product
-        fields = ('title', 'description', 'price', 'discount', 'company')
+        fields = ('title', 'price', 'price_with_discount', 'discount', 'company', 'category_name')
