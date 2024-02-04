@@ -1,6 +1,11 @@
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.core.validators import MaxValueValidator
 from django.db import models
+from django.db.models.signals import post_delete, post_save
 
+from products.receivers import delete_cache_total_price
 from products.tasks import set_price
 
 
@@ -26,7 +31,7 @@ class Product(models.Model):
     price = models.PositiveIntegerField()
     price_with_discount = models.PositiveIntegerField(default=0)
     author = models.ForeignKey(Seller, on_delete=models.CASCADE, default=None)
-    discount = models.PositiveIntegerField(default=0)
+    discount = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(100)])
 
     quantity = models.PositiveIntegerField(default=0)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=False, default=None)
@@ -46,13 +51,13 @@ class Product(models.Model):
 
         result = super().save(*args, **kwargs)
 
-        if creating:
-            set_price.delay(self.pk)
-
-        if price != self.__price or discount != self.__discount:
+        if creating or (price != self.__price or discount != self.__discount):
 
             set_price.delay(self.pk)
+            cache.delete(settings.PRICE_CACHE_NAME)
 
         return result
 
+
+post_delete.connect(delete_cache_total_price, sender=Product)
 
