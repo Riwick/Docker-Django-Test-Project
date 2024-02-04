@@ -58,6 +58,20 @@ class Product(models.Model):
 
         return result
 
+    def _do_update(self, *args, **kwargs):
+
+        creating = not bool(self.pk)
+        price = self.price
+        discount = self.discount
+
+        result = super()._do_update(*args, **kwargs)
+
+        if creating or (price != self.__price or discount != self.__discount):
+            set_price.delay(self.pk)
+            cache.delete(settings.PRICE_CACHE_NAME)
+
+        return result
+
 
 post_delete.connect(delete_cache_total_price, sender=Product)
 

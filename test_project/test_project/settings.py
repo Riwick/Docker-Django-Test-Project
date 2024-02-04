@@ -154,3 +154,10 @@ CACHES = {
 }
 
 PRICE_CACHE_NAME = 'total price'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
