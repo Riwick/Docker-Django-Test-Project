@@ -1,7 +1,7 @@
 from celery import shared_task
 from celery_singleton import Singleton
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Count
 
 
 @shared_task(base=Singleton)
@@ -15,3 +15,4 @@ def set_price(product_id):
 
         product.price_with_discount = product.annotated_price
         product.save()
+

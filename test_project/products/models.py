@@ -4,8 +4,10 @@ from django.core.cache import cache
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
-from products.receivers import delete_cache_total_price
+from products.receivers import delete_cache_total_price, delete_cache_total_amount
 from products.tasks import set_price
 
 
@@ -14,6 +16,10 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+
+post_delete.connect(delete_cache_total_amount, sender=Category)
+post_save.connect(delete_cache_total_amount, sender=Category)
 
 
 class Seller(models.Model):
@@ -75,3 +81,8 @@ class Product(models.Model):
 
 post_delete.connect(delete_cache_total_price, sender=Product)
 
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)

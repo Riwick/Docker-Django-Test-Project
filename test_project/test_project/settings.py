@@ -42,6 +42,10 @@ INSTALLED_APPS = [
 
     'django.contrib.postgres',
     'rest_framework',
+    'social_django',
+    'oauth2_provider',
+    'rest_framework.authtoken',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -56,10 +60,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'test_project.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
@@ -150,14 +155,32 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://redis:6379/1"
-    }
+    },
 }
 
 PRICE_CACHE_NAME = 'total price'
+PRODUCT_CACHE_NAME = 'product'
+CATEGORY_CACHE_NAME = 'category'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ]
 }
+
+SOCIAL_AUTH_GITHUB_KEY = '7fa6ced4a9390a0d4ae3'
+SOCIAL_AUTH_GITHUB_SECRET = '7cbbaa6b365224b1af50083c2b60e509fbea27db'
+
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+AUTHENTICATION_BACKENDS = (
+
+    'social_core.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+

@@ -1,7 +1,8 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from products.models import Product, Seller
+from products.models import Product, Seller, Category
 
 
 class ProductSerializer(ModelSerializer):
@@ -32,3 +33,26 @@ class DetailProductSerializer(ModelSerializer):
                   'company_name', 'user')
 
         read_only_fields = ('price_with_discount',)
+
+
+class CategorySerializer(ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name',)
+
+
+class ProfileSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+        extra_kwargs = {'password': {'write_only': True}}
+
+        def create(self, validated_data):
+            user = User(
+                email=validated_data['email'],
+                username=validated_data['username']
+            )
+            user.set_password(validated_data['password'])
+            user.save()
+            return user
