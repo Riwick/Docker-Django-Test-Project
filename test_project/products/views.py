@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Sum, Count
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
+from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -28,6 +31,10 @@ class ProductViewSet(ReadOnlyModelViewSet):
     queryset = get_product_queryset()
     serializer_class = ProductSerializer
     pagination_class = Paginator
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering_fields = ['title', 'price', 'category', 'author__company_name']
+    search_fields = ['title', 'description', '=price', 'author__company_name', 'discount']
+    filterset_fields = ['title', 'price', 'author__company_name', 'discount']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

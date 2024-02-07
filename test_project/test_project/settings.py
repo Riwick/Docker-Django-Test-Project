@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'rest_framework.authtoken',
     'djoser',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -171,7 +172,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
 
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    ]
+    ],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 SOCIAL_AUTH_GITHUB_KEY = '7fa6ced4a9390a0d4ae3'
