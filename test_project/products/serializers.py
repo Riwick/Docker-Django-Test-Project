@@ -14,14 +14,6 @@ class ProductSerializer(ModelSerializer):
         fields = ('title', 'price', 'price_with_discount', 'discount', 'company', 'category_name')
 
 
-class SellerSerializer(ModelSerializer):
-    user_username = serializers.CharField(source='user.username')
-
-    class Meta:
-        model = Seller
-        fields = ('company_name', 'address', 'user_username')
-
-
 class DetailProductSerializer(ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -33,6 +25,22 @@ class DetailProductSerializer(ModelSerializer):
                   'company_name', 'user')
 
         read_only_fields = ('price_with_discount',)
+
+
+class CreateProductSerializer(ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ('title', 'description', 'price', 'price_with_discount', 'discount', 'quantity', 'author', 'category', )
+        read_only_fields = ('price_with_discount',)
+
+
+class SellerSerializer(ModelSerializer):
+    user_username = serializers.CharField(source='user.username')
+
+    class Meta:
+        model = Seller
+        fields = ('company_name', 'address', 'user_username')
 
 
 class CategorySerializer(ModelSerializer):

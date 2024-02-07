@@ -3,7 +3,8 @@ from django.urls import path, include, re_path
 from rest_framework import routers
 
 from products.views import ProductViewSet, SellersProfileViewSet, RetrieveUpdateDeleteProductView, CategoryViewSet, \
-    ProfileView, BasketViewSet, BasketObjectView, FavoritesProductsViewSet, FavoritesProductsObjectView
+    ProfileView, BasketViewSet, BasketObjectView, FavoritesProductsViewSet, FavoritesProductsObjectView, \
+    CreateProductView
 
 router = routers.SimpleRouter()
 
@@ -16,6 +17,8 @@ router.register(r'favorites_products', FavoritesProductsViewSet, basename='Favor
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('products/<int:id>/', RetrieveUpdateDeleteProductView.as_view(), name='product-detail'),
+    path('product_add/', CreateProductView.as_view(), name='create-product'),
+
     path('accounts/profile/<int:id>/', ProfileView.as_view(), name='profile'),
     path('basket/<int:id>/', BasketObjectView.as_view(), name='basket-detail'),
     path('favorites_products/<int:id>/', FavoritesProductsObjectView.as_view(), name='favorites-products-detail'),
