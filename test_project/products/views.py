@@ -8,13 +8,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from products.business_logic.controllers import get_product_queryset, get_seller_queryset, get_detail_product_queryset, \
-    get_category_queryset, get_user_queryset, get_basket_queryset
-from products.custom_viewsets import ListUpdateDeleteCreateView
-from products.models import BasketProducts
+    get_category_queryset, get_user_queryset, get_basket_queryset, get_favorites_products_queryset
+from products.custom_viewsets import BasketCreateListView, FavoritesProductsCreateListViewSet
+from products.models import BasketProducts, FavoritesProducts
 from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly, \
     IsOwnerOrReadOnly
 from products.serializers import ProductSerializer, SellerSerializer, DetailProductSerializer, CategorySerializer, \
-    ProfileSerializer, BasketProductsSerializer, BasketObjectSerializer
+    ProfileSerializer, BasketProductsSerializer, BasketObjectSerializer, FavoritesProductsSerializer, \
+    FavoritesProductsObjectSerializer
 
 
 class Paginator(PageNumberPagination):
@@ -89,7 +90,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsUserOrSuperUserOrStaffOrReadOnly, IsAuthenticated]
 
 
-class BasketViewSet(ListUpdateDeleteCreateView):
+class BasketViewSet(BasketCreateListView):
     pagination_class = Paginator
     serializer_class = BasketProductsSerializer
     permission_classes = [IsOwnerOrReadOnly]
@@ -104,7 +105,7 @@ class BasketViewSet(ListUpdateDeleteCreateView):
             total_sum = total_price
         else:
             total_sum = queryset.aggregate(total=Sum('product__price_with_discount')).get('total')
-            cache.set(settings.BASKET_TOTAL_PRICE_NAME, total_sum, 60 * 20)
+            cache.set(settings.BASKET_TOTAL_PRICE_NAME, total_sum, 60 * 60)
 
         response_data = {'result': response.data, 'total_sum': total_sum}
         response.data = response_data
@@ -116,5 +117,35 @@ class BasketObjectView(generics.RetrieveDestroyAPIView):
     queryset = get_basket_queryset()
     lookup_field = 'id'
     serializer_class = BasketObjectSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
 
+
+class FavoritesProductsViewSet(FavoritesProductsCreateListViewSet):
+    queryset = get_favorites_products_queryset()
+    pagination_class = Paginator
+    serializer_class = FavoritesProductsSerializer
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = FavoritesProducts.objects.filter(user_id=self.request.user.id).select_related('product', 'user')
+        response = super().list(self, request, *args, **kwargs)
+
+        total_count = cache.get(settings.FAVORITES_PRODUCTS_CACHE_NAME)
+
+        if total_count:
+            count = total_count
+        else:
+            count = queryset.aggregate(total=Count('product')).get('total')
+            cache.set(settings.FAVORITES_PRODUCTS_CACHE_NAME, count, 60 * 60)
+
+        response_data = {'result': response.data, 'total_count': count}
+        response.data = response_data
+
+        return response
+
+
+class FavoritesProductsObjectView(generics.RetrieveDestroyAPIView):
+    queryset = get_favorites_products_queryset()
+    lookup_field = 'id'
+    serializer_class = FavoritesProductsObjectSerializer
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]

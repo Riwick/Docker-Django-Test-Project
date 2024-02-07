@@ -29,3 +29,8 @@ def get_user_queryset():
 def get_basket_queryset():
     from products.models import BasketProducts
     return BasketProducts.objects.all().select_related('product', 'user')
+
+
+def get_favorites_products_queryset():
+    from products.models import FavoritesProducts
+    return FavoritesProducts.objects.all().select_related('product', 'user')

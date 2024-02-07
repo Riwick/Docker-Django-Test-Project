@@ -162,6 +162,7 @@ PRICE_CACHE_NAME = 'total price'
 PRODUCT_CACHE_NAME = 'product'
 CATEGORY_CACHE_NAME = 'category'
 BASKET_TOTAL_PRICE_NAME = 'basket_total_price'
+FAVORITES_PRODUCTS_CACHE_NAME = 'favorites_products'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

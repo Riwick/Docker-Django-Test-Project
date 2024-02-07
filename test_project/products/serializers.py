@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from products.models import Product, Seller, Category, BasketProducts, Profile
+from products.models import Product, Seller, Category, BasketProducts, Profile, FavoritesProducts
 
 
 class ProductSerializer(ModelSerializer):
@@ -53,16 +53,34 @@ class ProfileSerializer(ModelSerializer):
 
 
 class BasketProductsSerializer(ModelSerializer):
-    price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
+    basket_price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
+    basket_product = serializers.CharField(source='product.title', read_only=True)
+    basket_user = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = BasketProducts
-        fields = ('id', 'quantity', 'product', 'price_with_discount', 'product', 'user')
+        fields = ('id', 'quantity', 'basket_product', 'basket_price_with_discount', 'basket_user', 'product', 'user')
 
 
 class BasketObjectSerializer(ModelSerializer):
-    price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
+    basket_price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
 
     class Meta:
         model = BasketProducts
-        fields = ('id', 'quantity', 'product', 'price_with_discount', 'product', 'user')
+        fields = ('id', 'quantity', 'product', 'basket_price_with_discount', 'user')
+
+
+class FavoritesProductsSerializer(ModelSerializer):
+    product_title = serializers.CharField(source='product.title', read_only=True)
+    user_name = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = FavoritesProducts
+        fields = ('id', 'product_title', 'user_name', 'product', 'user')
+
+
+class FavoritesProductsObjectSerializer(ModelSerializer):
+
+    class Meta:
+        model = FavoritesProducts
+        fields = '__all__'

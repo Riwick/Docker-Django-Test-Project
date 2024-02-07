@@ -3,11 +3,10 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.validators import MaxValueValidator
 from django.db import models
-from django.db.models.signals import post_delete, post_save
-from django.dispatch import receiver
-from rest_framework.authtoken.models import Token
+from django.db.models.signals import post_save
 
-from products.receivers import delete_cache_total_price, delete_cache_total_amount, delete_cache_basket_total_sum
+from products.receivers import delete_cache_total_price, delete_cache_total_amount, delete_cache_basket_total_sum, \
+    delete_cache_favorites_products_total_sum
 from products.tasks import set_price
 
 
@@ -18,7 +17,6 @@ class Category(models.Model):
         return self.name
 
 
-post_delete.connect(delete_cache_total_amount, sender=Category)
 post_save.connect(delete_cache_total_amount, sender=Category)
 
 
@@ -79,7 +77,7 @@ class Product(models.Model):
         return result
 
 
-post_delete.connect(delete_cache_total_price, sender=Product)
+post_save.connect(delete_cache_total_price, sender=Product)
 
 
 class Profile(models.Model):
@@ -99,7 +97,6 @@ class BasketProducts(models.Model):
 
 
 post_save.connect(delete_cache_basket_total_sum, sender=BasketProducts)
-post_delete.connect(delete_cache_basket_total_sum, sender=BasketProducts)
 
 
 class FavoritesProducts(models.Model):
@@ -108,6 +105,9 @@ class FavoritesProducts(models.Model):
 
     def __str__(self):
         return f'Избранные продукты {self.user.username}'
+
+
+post_save.connect(delete_cache_favorites_products_total_sum, sender=FavoritesProducts)
 
 
 class FavoritesCategories(models.Model):
