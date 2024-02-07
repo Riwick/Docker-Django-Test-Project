@@ -7,7 +7,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-from products.receivers import delete_cache_total_price, delete_cache_total_amount
+from products.receivers import delete_cache_total_price, delete_cache_total_amount, delete_cache_basket_total_sum
 from products.tasks import set_price
 
 
@@ -82,7 +82,42 @@ class Product(models.Model):
 post_delete.connect(delete_cache_total_price, sender=Product)
 
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
+class Profile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Профиль {self.user.username}'
+
+
+class BasketProducts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f'Корзина для {self.user.username}'
+
+
+post_save.connect(delete_cache_basket_total_sum, sender=BasketProducts)
+post_delete.connect(delete_cache_basket_total_sum, sender=BasketProducts)
+
+
+class FavoritesProducts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Избранные продукты {self.user.username}'
+
+
+class FavoritesCategories(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Избранные категории {self.user.username}'
+
+
+
+
+

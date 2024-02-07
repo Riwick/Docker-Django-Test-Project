@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from products.models import Product, Seller, Category
+from products.models import Product, Seller, Category, BasketProducts, Profile
 
 
 class ProductSerializer(ModelSerializer):
@@ -42,17 +42,27 @@ class CategorySerializer(ModelSerializer):
 
 
 class ProfileSerializer(ModelSerializer):
+    profile_username = serializers.CharField(source='username')
+    profile_first_name = serializers.CharField(source='first_name')
+    profile_last_name = serializers.CharField(source='last_name')
+    profile_email = serializers.CharField(source='email', read_only=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
-        extra_kwargs = {'password': {'write_only': True}}
+        model = Profile
+        fields = ('profile_username', 'profile_first_name', 'profile_last_name', 'profile_email')
 
-        def create(self, validated_data):
-            user = User(
-                email=validated_data['email'],
-                username=validated_data['username']
-            )
-            user.set_password(validated_data['password'])
-            user.save()
-            return user
+
+class BasketProductsSerializer(ModelSerializer):
+    price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
+
+    class Meta:
+        model = BasketProducts
+        fields = ('id', 'quantity', 'product', 'price_with_discount', 'product', 'user')
+
+
+class BasketObjectSerializer(ModelSerializer):
+    price_with_discount = serializers.IntegerField(source='product.price_with_discount', read_only=True)
+
+    class Meta:
+        model = BasketProducts
+        fields = ('id', 'quantity', 'product', 'price_with_discount', 'product', 'user')

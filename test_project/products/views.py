@@ -1,25 +1,24 @@
 from django.conf import settings
-from django.contrib.auth import logout
 from django.core.cache import cache
 from django.db.models import Sum, Count
-from django.shortcuts import redirect
 from rest_framework import generics
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from products.business_logic.controllers import get_product_queryset, get_seller_queryset, get_detail_product_queryset, \
-    get_category_queryset, get_user_queryset
-from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly
+    get_category_queryset, get_user_queryset, get_basket_queryset
+from products.custom_viewsets import ListUpdateDeleteCreateView
+from products.models import BasketProducts
+from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly, \
+    IsOwnerOrReadOnly
 from products.serializers import ProductSerializer, SellerSerializer, DetailProductSerializer, CategorySerializer, \
-    ProfileSerializer
+    ProfileSerializer, BasketProductsSerializer, BasketObjectSerializer
 
 
-class ProductsPaginator(PageNumberPagination):
-    page_size = 2
+class Paginator(PageNumberPagination):
+    page_size = 4
     page_query_param = 'page'
     max_page_size = 2
 
@@ -27,7 +26,7 @@ class ProductsPaginator(PageNumberPagination):
 class ProductViewSet(ReadOnlyModelViewSet):
     queryset = get_product_queryset()
     serializer_class = ProductSerializer
-    pagination_class = ProductsPaginator
+    pagination_class = Paginator
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -38,7 +37,7 @@ class ProductViewSet(ReadOnlyModelViewSet):
         if price_cache:
             total_price = price_cache
         else:
-            total_price = queryset.aggregate(total=Sum('price')).get('total')
+            total_price = queryset.aggregate(total=Sum('price_with_discount')).get('total')
             cache.set(settings.PRICE_CACHE_NAME, total_price, 60 * 60)
 
         response_data = {'result': response.data, 'total_price': total_price}
@@ -50,17 +49,19 @@ class RetrieveUpdateDeleteProductView(generics.RetrieveUpdateDestroyAPIView):
     queryset = get_detail_product_queryset()
     lookup_field = 'id'
     serializer_class = DetailProductSerializer
-    permission_classes = [IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsAuthenticated]
+    permission_classes = [IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly]
 
 
 class SellersProfileViewSet(ReadOnlyModelViewSet):
     queryset = get_seller_queryset()
     serializer_class = SellerSerializer
+    pagination_class = Paginator
 
 
 class CategoryViewSet(ReadOnlyModelViewSet):
     queryset = get_category_queryset()
     serializer_class = CategorySerializer
+    pagination_class = Paginator
 
     def list(self, request, *args, **kwargs):
 
@@ -86,4 +87,34 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     lookup_field = 'id'
     serializer_class = ProfileSerializer
     permission_classes = [IsUserOrSuperUserOrStaffOrReadOnly, IsAuthenticated]
+
+
+class BasketViewSet(ListUpdateDeleteCreateView):
+    pagination_class = Paginator
+    serializer_class = BasketProductsSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def list(self, request, *args, **kwargs):
+        queryset = BasketProducts.objects.filter(user_id=self.request.user.id).select_related('product', 'user')
+        response = super().list(self, request, *args, **kwargs)
+
+        total_price = cache.get(settings.BASKET_TOTAL_PRICE_NAME)
+
+        if total_price:
+            total_sum = total_price
+        else:
+            total_sum = queryset.aggregate(total=Sum('product__price_with_discount')).get('total')
+            cache.set(settings.BASKET_TOTAL_PRICE_NAME, total_sum, 60 * 20)
+
+        response_data = {'result': response.data, 'total_sum': total_sum}
+        response.data = response_data
+
+        return response
+
+
+class BasketObjectView(generics.RetrieveDestroyAPIView):
+    queryset = get_basket_queryset()
+    lookup_field = 'id'
+    serializer_class = BasketObjectSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 

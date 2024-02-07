@@ -24,3 +24,8 @@ def get_category_queryset():
 def get_user_queryset():
     from django.contrib.auth.models import User
     return User.objects.all()
+
+
+def get_basket_queryset():
+    from products.models import BasketProducts
+    return BasketProducts.objects.all().select_related('product', 'user')

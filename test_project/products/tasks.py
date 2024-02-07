@@ -1,7 +1,9 @@
 from celery import shared_task
 from celery_singleton import Singleton
+from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F, Count
+from django.db.models import F, Count, Sum
 
 
 @shared_task(base=Singleton)

@@ -13,3 +13,13 @@ def delete_cache_total_price(*args, **kwargs):
 @receiver(post_delete, sender=None)
 def delete_cache_total_amount(*args, **kwargs):
     cache.delete(settings.CATEGORY_CACHE_NAME)
+
+
+@receiver(post_save, sender=None)
+def delete_cache_basket_total_sum(*args, **kwargs):
+    cache.delete(settings.BASKET_TOTAL_PRICE_NAME)
+
+
+@receiver(post_delete, sender=None)
+def delete_cache_basket_total_sum(*args, **kwargs):
+    cache.delete(settings.BASKET_TOTAL_PRICE_NAME)
