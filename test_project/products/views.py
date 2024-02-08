@@ -13,12 +13,12 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from products.business_logic.controllers import get_product_queryset, get_seller_queryset, \
     get_category_queryset, get_user_queryset, get_basket_queryset, get_favorites_products_queryset
 from products.custom_viewsets import BasketCreateListView, FavoritesProductsCreateListViewSet
-from products.models import BasketProducts, FavoritesProducts
+from products.models import BasketProducts, FavoritesProducts, Product
 from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly, \
-    IsOwnerOrReadOnly
+    IsOwnerOrReadOnly, IsSellerOrReadOnly
 from products.serializers import ProductSerializer, SellerSerializer, DetailProductSerializer, CategorySerializer, \
     ProfileSerializer, BasketProductsSerializer, BasketObjectSerializer, FavoritesProductsSerializer, \
-    FavoritesProductsObjectSerializer, CreateProductSerializer
+    FavoritesProductsObjectSerializer, CreateProductSerializer, SellerObjectSerializer
 
 
 class Paginator(PageNumberPagination):
@@ -70,6 +70,13 @@ class SellersProfileViewSet(ReadOnlyModelViewSet):
     queryset = get_seller_queryset()
     serializer_class = SellerSerializer
     pagination_class = Paginator
+
+
+class SellerProfileObjectView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = get_seller_queryset()
+    lookup_field = 'id'
+    serializer_class = SellerObjectSerializer
+    permission_classes = [IsSellerOrReadOnly]
 
 
 class CategoryViewSet(ReadOnlyModelViewSet):

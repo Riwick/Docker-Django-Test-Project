@@ -1,9 +1,10 @@
+from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin, \
     CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from products.models import BasketProducts, FavoritesProducts
+from products.models import BasketProducts, FavoritesProducts, Product
 
 
 class BasketCreateListView(CreateModelMixin,

@@ -43,6 +43,15 @@ class SellerSerializer(ModelSerializer):
         fields = ('company_name', 'address', 'user_username')
 
 
+class SellerObjectSerializer(ModelSerializer):
+    user_username = serializers.CharField(source='user.username', read_only=True)
+    date_joined = serializers.DateTimeField(source='user.date_joined', read_only=True)
+
+    class Meta:
+        model = Seller
+        fields = ('id', 'company_name', 'user_username', 'address', 'date_joined')
+
+
 class CategorySerializer(ModelSerializer):
     class Meta:
         model = Category
