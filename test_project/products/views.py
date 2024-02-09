@@ -12,8 +12,9 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from products.business_logic.controllers import get_product_queryset, get_seller_queryset, \
     get_category_queryset, get_user_queryset, get_basket_queryset, get_favorites_products_queryset
-from products.custom_viewsets import BasketCreateListView, FavoritesProductsCreateListViewSet
-from products.models import BasketProducts, FavoritesProducts, Product
+from products.custom_viewsets import BasketCreateListView, FavoritesProductsCreateListViewSet, \
+    SellerProductsListUpdateDeleteViewSet
+from products.models import BasketProducts, FavoritesProducts, Product, Seller
 from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly, \
     IsOwnerOrReadOnly, IsSellerOrReadOnly
 from products.serializers import ProductSerializer, SellerSerializer, DetailProductSerializer, CategorySerializer, \
@@ -74,9 +75,26 @@ class SellersProfileViewSet(ReadOnlyModelViewSet):
 
 class SellerProfileObjectView(generics.RetrieveUpdateDestroyAPIView):
     queryset = get_seller_queryset()
-    lookup_field = 'id'
     serializer_class = SellerObjectSerializer
     permission_classes = [IsSellerOrReadOnly]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = Seller.objects.get(id=self.request.query_params.get('id'))
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class SellerProductsListView(SellerProductsListUpdateDeleteViewSet):
+    serializer_class = CreateProductSerializer
+    permission_classes = [IsSellerOrReadOnly]
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(self, request, *args, **kwargs)
+
+        response_data = {'products': response.data}
+        response.data = response_data
+
+        return response
 
 
 class CategoryViewSet(ReadOnlyModelViewSet):
@@ -101,6 +119,12 @@ class CategoryViewSet(ReadOnlyModelViewSet):
         response.data = response_data
 
         return response
+
+
+class AddCategoryView(generics.ListCreateAPIView):
+    queryset = get_category_queryset()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrStaffOrReadOnly]
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
