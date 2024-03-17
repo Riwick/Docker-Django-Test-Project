@@ -11,10 +11,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from products.business_logic.controllers import get_product_queryset, get_seller_queryset, \
-    get_category_queryset, get_user_queryset, get_basket_queryset, get_favorites_products_queryset
+    get_category_queryset, get_profile_queryset, get_basket_queryset, get_favorites_products_queryset
 from products.custom_viewsets import BasketCreateListView, FavoritesProductsCreateListViewSet, \
     SellerProductsListUpdateDeleteViewSet
-from products.models import BasketProducts, FavoritesProducts, Product, Seller
+from products.models import BasketProducts, FavoritesProducts, Seller
 from products.permissions import IsAuthorOrReadOnly, IsAdminOrStaffOrReadOnly, IsUserOrSuperUserOrStaffOrReadOnly, \
     IsOwnerOrReadOnly, IsSellerOrReadOnly
 from products.serializers import ProductSerializer, SellerSerializer, DetailProductSerializer, CategorySerializer, \
@@ -128,7 +128,7 @@ class AddCategoryView(generics.ListCreateAPIView):
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    queryset = get_user_queryset()
+    queryset = get_profile_queryset()
     lookup_field = 'id'
     serializer_class = ProfileSerializer
     permission_classes = [IsUserOrSuperUserOrStaffOrReadOnly, IsAuthenticated]

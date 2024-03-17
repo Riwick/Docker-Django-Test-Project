@@ -1,5 +1,3 @@
-
-
 def get_product_queryset():
     from products.models import Product
     return Product.objects.all().select_related('author', 'category')
@@ -16,9 +14,9 @@ def get_category_queryset():
     return Category.objects.all()
 
 
-def get_user_queryset():
-    from django.contrib.auth.models import User
-    return User.objects.all()
+def get_profile_queryset():
+    from products.models import Profile
+    return Profile.objects.all()
 
 
 def get_basket_queryset():

@@ -31,7 +31,7 @@ class CreateProductSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('title', 'description', 'price', 'price_with_discount', 'discount', 'quantity', 'author', 'category', )
+        fields = ('title', 'description', 'price', 'price_with_discount', 'discount', 'quantity', 'author', 'category')
         read_only_fields = ('price_with_discount',)
 
 
@@ -59,10 +59,10 @@ class CategorySerializer(ModelSerializer):
 
 
 class ProfileSerializer(ModelSerializer):
-    profile_username = serializers.CharField(source='username')
-    profile_first_name = serializers.CharField(source='first_name')
-    profile_last_name = serializers.CharField(source='last_name')
-    profile_email = serializers.CharField(source='email', read_only=True)
+    profile_username = serializers.CharField(source='user.username')
+    profile_first_name = serializers.CharField(source='user.first_name')
+    profile_last_name = serializers.CharField(source='user.last_name')
+    profile_email = serializers.CharField(source='user.email', read_only=True)
 
     class Meta:
         model = Profile

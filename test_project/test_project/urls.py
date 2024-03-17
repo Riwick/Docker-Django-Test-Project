@@ -8,7 +8,7 @@ from products.views import ProductViewSet, SellersProfileViewSet, RetrieveUpdate
 
 router = routers.SimpleRouter()
 
-router.register(r'products', ProductViewSet, basename='Products')
+router.register(r'products', ProductViewSet)
 router.register(r'sellers', SellersProfileViewSet, basename='Seller')
 router.register(r'category', CategoryViewSet, basename='Category')
 router.register(r'basket', BasketViewSet, basename='Basket')
@@ -28,6 +28,7 @@ urlpatterns = [
     path('favorites_products/<int:id>/', FavoritesProductsObjectView.as_view(), name='favorites-products-detail'),
 
     path('seller-profile/', SellerProfileObjectView.as_view(), name='seller-profile'),
+    path('profile/<int:id>/', ProfileView.as_view(), name='user-profile'),
 
     re_path('social_auth/', include('social_django.urls', namespace='social')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
